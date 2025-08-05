@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Lamp Remote</title>
+<style>
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html, body{height:100%}
+  body{
+    margin:0; font-family: system-ui, Segoe UI, Roboto, Arial;
+    background:#0b1322; color:#e5e7eb; display:grid; place-items:center;
+  }
+  #wrap{ display:grid; gap:16px; place-items:center; padding:16px }
+  #btn{
+    width:min(560px, 92vw); height:min(560px, 92vw);
+    border:none; border-radius:24px; cursor:pointer; touch-action:manipulation;
+    background: radial-gradient(120% 120% at 50% 20%, #1b2a48, #0f1a33 60%);
+    color:#fff; font-size:clamp(22px, 6vw, 40px); font-weight:800; letter-spacing:.3px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,255,255,.06);
+    display:grid; place-items:center; transition: transform .06s ease;
+  }
+  #btn:active{ transform: scale(.98) }
+  #sub{ opacity:.8; font-size:14px }
+  #actions{ display:flex; gap:10px; }
+  #reset{
+    border:none; border-radius:10px; padding:10px 14px; cursor:pointer;
+    background:#374151; color:#fff; font-weight:600;
+  }
+</style>
+</head>
+<body>
+  <div id="wrap">
+    <button id="btn">LIGHT&nbsp;NEXT</button>
+    <div id="actions">
+      <button id="reset">Reset</button>
+    </div>
+    <div id="sub">Open <b>display.html</b> on projector. Keep both windows in the same browser.</div>
+  </div>
+
+<script>
+  const ch = new BroadcastChannel('lamps'); // Establishing the communication channel
+  const btn = document.getElementById('btn');
+  const resetBtn = document.getElementById('reset');
+
+  function haptic(){ try{ navigator.vibrate && navigator.vibrate(15); }catch{} }
+
+  btn.addEventListener('click', ()=>{
+    ch.postMessage('next');  // Send the "next" message to display.html
+    haptic(); // Trigger haptic feedback for button press
+  });
+
+  resetBtn.addEventListener('click', ()=>{
+    ch.postMessage('reset'); // Send the "reset" message to reset the lamps
+    haptic();
+  });
+
+  // Spacebar also triggers next
+  window.addEventListener('keydown', e=>{
+    if(e.code === 'Space'){ e.preventDefault(); ch.postMessage('next'); haptic(); }
+    if(e.key.toLowerCase() === 'r'){ ch.postMessage('reset'); haptic(); }
+  });
+</script>
+</body>
+</html>

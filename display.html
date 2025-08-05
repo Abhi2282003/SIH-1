@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lamp Lighting – Display</title>
+  <style>
+    :root{
+      --lamp-size: 150px;
+      --bowl: #8b4a2e;
+      --bowl-dark: #5b2e1d;
+      --bowl-highlight: #bc7a56;
+      --flame1: #ffd36e;
+      --flame2: #ff8a00;
+      --glow: rgba(255, 180, 40, 0.35);
+      --background: #0f172a; /* Background color */
+      --ambient-light: .32; /* Ambient glow intensity */
+      --logo-size: 650px; /* Logo size */
+      --logo-large-size: 1000px; /* Larger logo size for fullscreen */
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: system-ui, Segoe UI, Roboto, Arial;
+      color:#e5e7eb; background: radial-gradient(1200px 600px at 50% -10%, var(--background), #0b1021 55%);
+      min-height:100vh; display:grid; grid-template-rows:auto 1fr;
+      overflow:hidden;
+    }
+    header{
+      padding:10px 14px; font-size:14px; display:flex; gap:12px; align-items:center; justify-content:space-between;
+      background: rgba(3,7,18,.35); border-bottom: 1px solid rgba(255,255,255,.06); backdrop-filter: blur(6px);
+    }
+    .chip{ background:#111827; border:1px solid #24304d; border-radius:999px; padding:6px 10px; opacity:.9 }
+    #stage{ position:relative; display:grid; place-items:end center; min-height:calc(100vh - 52px); padding:24px 16px 78px }
+    .row{
+      display:grid; gap:18px;
+      grid-template-columns:repeat(auto-fit,minmax(calc(var(--lamp-size)*.8),1fr));
+      max-width:min(1200px,92vw); margin-inline:auto; justify-items:center; margin-bottom:12px;
+    }
+    .lamp{ position:relative; width:var(--lamp-size); height:calc(var(--lamp-size)*.85);
+      display:grid; place-items:end center; filter: drop-shadow(0 10px 24px rgba(0,0,0,.45));
+      transition: transform .3s ease;
+    }
+    .lamp.lit{ transform: translateY(-2px); }
+    .bowl{
+      position:relative; width:100%; height:58%;
+      background: radial-gradient(100% 120% at 50% 20%, var(--bowl-highlight), var(--bowl) 35%, var(--bowl-dark) 80%);
+      border-bottom-left-radius:999px; border-bottom-right-radius:999px; border-top-left-radius:40px; border-top-right-radius:40px;
+      box-shadow: inset 0 6px 18px rgba(0,0,0,.35), 0 10px 20px rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .wick{ position:absolute; bottom: calc(58% - 6px); width:8px; height:10px; border-radius:2px; background:#2c2c2c }
+    .flame{
+      position:absolute; bottom: calc(58% + 4px); width:18px; height:28px; border-radius:50% 50% 55% 55%;
+      transform-origin: bottom center; opacity:0; transform: translateY(6px) scale(.5);
+    }
+    .flame:before, .flame:after{ content:""; position:absolute; inset:0; border-radius:inherit }
+    .flame:before{ background: radial-gradient(closest-side, var(--flame1), var(--flame2) 70%, transparent 72%); filter: blur(.3px) }
+    .flame:after{ inset: 2px 3px 3px 3px; background: radial-gradient(closest-side, #fff6c7, transparent 70%); filter: blur(1.2px); opacity:.85 }
+    .lamp.lit .glow{
+      position:absolute; bottom: calc(58% - 4px); left:50%; transform: translateX(-50%);
+      width:110px; height:110px; border-radius:50%;
+      background: radial-gradient(closest-side, var(--glow), transparent 60%);
+      filter: blur(10px); pointer-events:none; animation: pulse 2.2s ease-in-out infinite;
+    }
+    @keyframes pulse{ 0%,100%{opacity:.75} 50%{opacity:.35} }
+    .lamp.lit .flame{
+      opacity:1; transform: translateY(0) scale(1); animation: flicker .14s infinite alternate ease-in-out;
+    }
+    @keyframes flicker{
+      from{ transform: translateY(-.6px) scale(.98) rotate(-1deg); filter: brightness(1.05) }
+      to  { transform: translateY(.6px)  scale(1.02) rotate( 1deg); filter: brightness(.95) }
+    }
+
+    /* Logo fade effect */
+    #logoWrap{ position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; z-index: 0; }
+    #logo{
+      width: var(--logo-size); opacity: 0;
+      filter: drop-shadow(0 0 40px rgba(255, 210, 100, .26)) drop-shadow(0 0 90px rgba(255, 150, 40, .16));
+      mix-blend-mode: screen;
+      transition: opacity 1s ease, width 1s ease;
+      animation: glowEffect 3s infinite alternate ease-in-out;
+    }
+
+    /* Glow effect for the logo */
+    @keyframes glowEffect {
+      0% { filter: drop-shadow(0 0 40px rgba(255, 210, 100, .26)) drop-shadow(0 0 90px rgba(255, 150, 40, .16)); }
+      50% { filter: drop-shadow(0 0 80px rgba(255, 210, 100, .4)) drop-shadow(0 0 160px rgba(255, 150, 40, .3)); }
+      100% { filter: drop-shadow(0 0 120px rgba(255, 210, 100, .5)) drop-shadow(0 0 200px rgba(255, 150, 40, .4)); }
+    }
+
+    /* Background wave effect */
+    #bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background: radial-gradient(1200px 600px at 50% -10%, var(--background), #0b1021 55%);
+      animation: waveAnimation 10s ease-in-out infinite;
+    }
+
+    @keyframes waveAnimation {
+      0% { background-position: 0 0; }
+      50% { background-position: 100% 100%; }
+      100% { background-position: 0 0; }
+    }
+
+    /* Fullscreen Button */
+    #fullscreenButton {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #374151;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* Number Input for Lamps */
+    #lampInput {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      background-color: #374151;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 60px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="chip">Digital Lamp Lighting</div>
+  <div class="chip">Total: <b id="totOut">–</b></div>
+  <div class="chip">Lit: <b id="curOut">–</b></div>
+</header>
+
+<div id="bg"></div>
+<div id="logoWrap"><img id="logo" src="a.png" alt="Logo" /></div>
+
+<main id="stage">
+  <div id="row" class="row"></div>
+</main>
+
+<!-- Fullscreen Button -->
+<button id="fullscreenButton">Go Fullscreen (Press 'F')</button>
+
+<!-- Number of Lamps Input -->
+<input type="number" id="lampInput" value="5" min="1" max="30" />
+
+<script>
+  const ch = new BroadcastChannel('lamps');
+  const row = document.getElementById('row');
+  const totOut = document.getElementById('totOut');
+  const curOut = document.getElementById('curOut');
+  const logo = document.getElementById('logo');
+  const fullscreenButton = document.getElementById('fullscreenButton');
+  const lampInput = document.getElementById('lampInput');
+  let current = 0;
+  let TOTAL = parseInt(lampInput.value); // Set default value of lamps
+
+  // Create lamps
+  function createLamp(){
+    const el = document.createElement('div'); el.className = 'lamp';
+    const bowl = document.createElement('div'); bowl.className = 'bowl';
+    const wick = document.createElement('div'); wick.className = 'wick'; wick.style.left='calc(50% - 4px)';
+    const flame = document.createElement('div'); flame.className = 'flame';
+    const glow  = document.createElement('div'); glow.className  = 'glow';
+    el.append(bowl, wick, flame, glow); return el;
+  }
+
+  // Build row of lamps
+  function buildRow(n){
+    row.innerHTML=''; for(let i=0;i<n;i++) row.appendChild(createLamp());
+    totOut.textContent = n; curOut.textContent = 0; current = 0;
+  }
+
+  // Light next lamp and update logo opacity
+  function lightNext(){
+    if(current >= row.children.length) return;
+    row.children[current].classList.add('lit');
+    current++; curOut.textContent = current;
+
+    // Gradually increase logo visibility as lamps light up
+    const opacityValue = Math.min(current / TOTAL, 1);
+    logo.style.opacity = opacityValue;
+  }
+
+  // Reset all lamps and logo
+  function resetAll(){
+    [...row.children].forEach(l=> l.classList.remove('lit'));
+    current = 0; curOut.textContent = 0;
+    logo.style.opacity = 0; // Reset logo opacity
+  }
+
+  // Listen for remote messages
+  ch.onmessage = (e) => {
+    const msg = e.data;
+    if(msg === 'next') lightNext();
+    if(msg === 'reset') resetAll();
+  };
+
+  // Listen for spacebar and 'r' key for next and reset respectively
+  window.addEventListener('keydown', (e) => {
+    if(e.code === 'Space'){ e.preventDefault(); ch.postMessage('next'); }
+    if(e.key.toLowerCase() === 'r'){ ch.postMessage('reset'); }
+    if(e.key === 'f' || e.key === 'F'){ toggleFullscreen(); }
+  });
+
+  // Toggle fullscreen mode
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => console.log(err));
+      // When fullscreen is enabled, make logo larger
+      logo.style.width = "var(--logo-large-size)";
+      lampInput.style.display = "none"; // Hide the lamp input
+    } else {
+      document.exitFullscreen();
+      // Revert logo size back when exiting fullscreen
+      logo.style.width = "var(--logo-size)";
+      lampInput.style.display = "block"; // Show the lamp input again
+    }
+  }
+
+  // Fullscreen button event
+  fullscreenButton.addEventListener('click', toggleFullscreen);
+
+  // Update the number of lamps based on user input
+  lampInput.addEventListener('input', () => {
+    TOTAL = parseInt(lampInput.value);
+    buildRow(TOTAL); // Rebuild row based on new input
+  });
+
+  // Initialize lamps
+  buildRow(TOTAL);
+</script>
+</body>
+</html>
