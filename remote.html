@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <title>Lamp Remote</title>
 <style>
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
@@ -59,6 +60,36 @@
   window.addEventListener('keydown', e=>{
     if(e.code === 'Space'){ e.preventDefault(); ch.postMessage('next'); haptic(); }
     if(e.key.toLowerCase() === 'r'){ ch.postMessage('reset'); haptic(); }
+  });
+
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBX5H4F58GpycnJ9NL0Lh5G1GtJqUQcxHA",
+    authDomain: "sih-1-21d8e.firebaseapp.com",
+    databaseURL: "https://sih-1-21d8e-default-rtdb.firebaseio.com",
+    projectId: "sih-1-21d8e",
+    storageBucket: "sih-1-21d8e.firebasestorage.app",
+    messagingSenderId: "258104072100",
+    appId: "1:258104072100:web:ee810ec34cca884df05331",
+    measurementId: "G-WNDVTW4JG4"
+  };
+
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const database = firebase.database(app);
+
+  // Reference to the lighting control node in Firebase
+  const lightingRef = database.ref('lighting');  // Adjust the path according to your DB structure
+
+  // Listen for changes in the Firebase Realtime Database
+  lightingRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data === 'next') {
+      ch.postMessage('next');  // Trigger the 'next' lamp lighting function
+    }
+    if (data === 'reset') {
+      ch.postMessage('reset');  // Trigger the 'reset' function to reset the lamps
+    }
   });
 </script>
 </body>
