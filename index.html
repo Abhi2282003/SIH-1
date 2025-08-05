@@ -130,7 +130,45 @@
       font-size: 18px;
     }
   </style>
+
+  <!-- Firebase Configuration -->
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js"></script>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBX5H4F58GpycnJ9NL0Lh5G1GtJqUQcxHA",
+      authDomain: "sih-1-21d8e.firebaseapp.com",
+      databaseURL: "https://sih-1-21d8e-default-rtdb.firebaseio.com",
+      projectId: "sih-1-21d8e",
+      storageBucket: "sih-1-21d8e.firebasestorage.app",
+      messagingSenderId: "258104072100",
+      appId: "1:258104072100:web:ee810ec34cca884df05331",
+      measurementId: "G-WNDVTW4JG4"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database(app);
+    
+    // Reference to the lighting control node in Firebase
+    const lightingRef = database.ref('lighting');  // Adjust the path according to your DB structure
+
+    // Listen for changes in the Firebase Realtime Database
+    lightingRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data === 'next') {
+        lightNext();  // Trigger the 'next' lamp lighting function
+      }
+      if (data === 'reset') {
+        resetAll();  // Trigger the 'reset' function to reset lamps
+      }
+    });
+  </script>
+
 </head>
+
 <body>
 <header>
   <div class="chip">Digital Lamp Lighting</div>
@@ -237,6 +275,6 @@
   // Initialize lamps
   buildRow(TOTAL);
 </script>
+
 </body>
 </html>
-
